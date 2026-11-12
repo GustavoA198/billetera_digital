@@ -1,9 +1,15 @@
 # IDE
-.idea/
-.vscode/
+.idea
+*.iws
+*.iml
+*.ipr
+.vscode
 
 # Datos locales
 .atl/
 
 # Env
 .env
+
+#Spring Boot
+target/
