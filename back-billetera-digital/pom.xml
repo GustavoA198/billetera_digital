@@ -57,6 +57,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- flyway -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
