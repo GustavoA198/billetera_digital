@@ -66,6 +66,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
+    /**
+     * Completa las respuestas de error de Spring con el código de error y el identificador de traza.
+     *
+     * @param ex         La excepción lanzada.
+     * @param body       El cuerpo propuesto por el manejador.
+     * @param headers    Las cabeceras de la respuesta.
+     * @param statusCode El código de estado HTTP.
+     * @param request    La petición web que originó la excepción.
+     * @return Una respuesta con los detalles del error.
+     */
+
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
             Exception ex, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
