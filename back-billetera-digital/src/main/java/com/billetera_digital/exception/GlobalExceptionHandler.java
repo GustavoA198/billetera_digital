@@ -3,6 +3,7 @@ package com.billetera_digital.exception;
 import com.billetera_digital.exception.dto.FieldErrorDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
@@ -17,7 +19,7 @@ import java.util.List;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
-     * Maneja las excepciones del negocio.
+     * Maneja las excepciones del negocio(BusinessException).
      *
      * @param ex      La excepción lanzada.
      * @return Una respuesta con detalles del error.
@@ -31,7 +33,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Maneja las excepciones inesperadas del sistema.
+     * Maneja las excepciones de violación de integridad de datos (DataIntegrityViolationException).
+     * La que se ´produce cuando se intenta insertar un registro con un valor duplicado en una columna que tiene una restricción de unicidad.
+     * Esto en el caso de que se intente el registro en el mismo instante tanto asi que la validacion del servicio no alcance a detectar el duplicado.
+     *
+     * @param ex      La excepción lanzada.
+     * @return Una respuesta con detalles del error.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    protected  ProblemDetail dataIntegrityViolationException(DataIntegrityViolationException ex){
+        if (ex.getMostSpecificCause() instanceof SQLException sqlException && "23505".equals(sqlException.getSQLState())) {
+            log.error("Data integrity violation exception", ex);
+            ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Data integrity violation exception");
+            problemDetail.setProperty("code", "DATA_INTEGRITY_VIOLATION_EXCEPTION");
+            problemDetail.setProperty("traceId", MDC.get("traceId"));
+            return problemDetail;
+        }
+        return handleUnexpected(ex);
+    }
+
+    /**
+     * Maneja las excepciones inesperadas del sistema(INTERNAL_ERROR).
      *
      * @param ex      La excepción lanzada.
      * @return Una respuesta con detalles del error.
@@ -46,7 +68,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * Maneja las excepciones de validación de argumentos.
+     * Maneja las excepciones de validación de argumentos(VALIDATION_ERROR).
      *
      * @param ex      La excepción lanzada.
      * @return Una respuesta con detalles del error.
@@ -68,6 +90,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
      * Completa las respuestas de error de Spring con el código de error y el identificador de traza.
+     * Todas aquellas que no se estan manejando puntualmente como por ejemplo handleMethodArgumentNotValid
      *
      * @param ex         La excepción lanzada.
      * @param body       El cuerpo propuesto por el manejador.
