@@ -14,18 +14,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+
+import com.billetera_digital.BaseIntegrationTest;
 
 /**
  * Pruebas de integración contra un PostgreSQL real (Testcontainers).
@@ -47,14 +43,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * PostgreSQL devuelve en el mensaje. Si un INSERT dejara de ser válido por otra razón
  * (una columna mal escrita, un tipo equivocado), el test cae.
  */
-@SpringBootTest
-@ActiveProfiles("test")
-@Testcontainers
-class DatabaseIntegrationTests {
-
-	@Container
-	@ServiceConnection
-	static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18.6");
+class DatabaseIntegrationTests extends BaseIntegrationTest {
 
 	@Autowired
 	private DataSource dataSource;
