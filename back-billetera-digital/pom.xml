@@ -75,6 +75,17 @@
 		</dependency>
 		<!-- fin dependencias flyway -->
 
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
+		</dependency>
+
 		<!-- test containers postgres-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
