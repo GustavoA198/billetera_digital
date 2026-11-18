@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -50,6 +52,37 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             return problemDetail;
         }
         return handleUnexpected(ex);
+    }
+
+
+    /**
+     * Maneja las excepciones de autenticación(AuthenticationException).
+     *
+     * @param ex      La excepción lanzada.
+     * @return Una respuesta con detalles del error.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ProblemDetail handleAuthenticationException(AuthenticationException ex) {
+        log.warn("Authentication exception", ex);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Se requiere autenticación");
+        problemDetail.setProperty("code", "UNAUTHORIZED");
+        problemDetail.setProperty("traceId", MDC.get("traceId"));
+        return problemDetail;
+    }
+
+    /**
+     * Maneja las excepciones de acceso denegado (AccessDeniedException).
+     *
+     * @param ex      La excepción lanzada.
+     * @return Una respuesta con detalles del error.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("Access denied exception", ex);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "No tienes permiso para esta operación");
+        problemDetail.setProperty("code", "FORBIDDEN");
+        problemDetail.setProperty("traceId", MDC.get("traceId"));
+        return problemDetail;
     }
 
     /**
