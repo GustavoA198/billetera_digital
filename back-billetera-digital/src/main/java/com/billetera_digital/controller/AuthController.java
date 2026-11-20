@@ -1,5 +1,7 @@
 package com.billetera_digital.controller;
 
+import com.billetera_digital.dto.LoginRequest;
+import com.billetera_digital.dto.LoginResponse;
 import com.billetera_digital.dto.RegisterRequest;
 import com.billetera_digital.dto.UserResponse;
 import com.billetera_digital.service.AuthService;
@@ -19,5 +21,10 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }

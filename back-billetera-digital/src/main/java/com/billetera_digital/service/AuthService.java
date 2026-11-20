@@ -1,12 +1,16 @@
 package com.billetera_digital.service;
 
+import com.billetera_digital.dto.LoginRequest;
+import com.billetera_digital.dto.LoginResponse;
 import com.billetera_digital.dto.RegisterRequest;
 import com.billetera_digital.dto.UserResponse;
 import com.billetera_digital.entity.AppUser;
 import com.billetera_digital.entity.Role;
 import com.billetera_digital.entity.Wallet;
 import com.billetera_digital.entity.WalletStatus;
+import com.billetera_digital.exception.AccountLockedException;
 import com.billetera_digital.exception.EmailAlreadyRegisteredException;
+import com.billetera_digital.exception.InvalidCredentialsException;
 import com.billetera_digital.exception.PhoneAlreadyRegisteredException;
 import com.billetera_digital.repository.AppUserRepository;
 import com.billetera_digital.repository.WalletRepository;
@@ -16,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +31,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final WalletRepository walletRepository;
     private final AppUserRepository appUserRepository;
-
+    private final JwtService jwtService;
+    private final LoginAttemptService loginAttemptService;
 
 
     @Transactional
@@ -65,5 +72,35 @@ public class AuthService {
         );
 
         return userResponse;
+    }
+
+
+    @Transactional
+    public LoginResponse login(LoginRequest request){
+        Instant instant = Instant.now();
+        String emailLowerCase = request.email().toLowerCase(Locale.ROOT);
+
+        Optional<AppUser> optionalAppUser = appUserRepository.findByEmail(emailLowerCase);
+        AppUser user = optionalAppUser.orElseThrow(InvalidCredentialsException::new);
+
+        if(user.getLockedUntil() != null && user.getLockedUntil().isAfter(instant)){
+            throw new AccountLockedException();
+        }
+
+        if(!passwordEncoder.matches(request.password(), user.getPasswordHash())){
+            if(loginAttemptService.registerFailedAttempt(user.getId())){
+                throw new AccountLockedException();
+            }
+            throw new InvalidCredentialsException();
+        }
+
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
+        String jwt = jwtService.generateAccessToken(user);
+
+        LoginResponse loginResponse = new LoginResponse(jwt, "Bearer", jwtService.getAccessTokenExpiresInSeconds());
+
+        return loginResponse;
+
     }
 }
