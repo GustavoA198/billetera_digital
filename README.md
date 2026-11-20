@@ -15,6 +15,12 @@ Completá los valores en `.env`:
 | `DB_NAME` | Nombre de la base de datos | `billetera_digital_bd` |
 | `DB_USERNAME` | Usuario de PostgreSQL | `billetera_digital` |
 | `DB_PASSWORD` | Password de PostgreSQL | *(secreto)* |
+| `JWT_SECRET` | Clave de firma de los tokens JWT, codificada en Base64 | `Y2xhdmUtZGUtZWplbXBsby1wYXJhLWRvY3MtMzJieXQ=` |
+
+> La clave JWT debe estar en **Base64** y tener al menos **32 bytes** (el mínimo que exige HS256). Generá una real con:
+> ```bash
+> openssl rand -base64 32
+> ```
 
 ### 2. Levantar la base de datos
 
